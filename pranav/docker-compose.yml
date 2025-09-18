@@ -10,9 +10,9 @@ services:
       # Mount config file
       - ./config.json:/app/config.json:ro
       # Mount logs directory for persistence
-      - ./logs:/app/logs
-      # Mount Chrome data directory for session persistence (optional)
-      - chrome_data:/home/appuser/.config/google-chrome
+      - ./logs_pranav:/app/logs
+      - ./screenshots_pranav:/app/logs/screenshots
+      - chrome_data_pranav:/home/appuser/.config/google-chrome
     environment:
       - TZ=Asia/Kolkata  # Set your timezone
     # Resource limits
@@ -31,7 +31,14 @@ services:
       timeout: 30s
       retries: 3
       start_period: 30s
+    ports:
+      - "5000:5000"
+    networks:
+      - class-joiner-network-pranav
 
 volumes:
-  chrome_data:
+  chrome_data_pranav:
     driver: local
+networks:
+  class-joiner-network-pranav:
+    driver: bridge

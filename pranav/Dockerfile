@@ -46,13 +46,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files
 COPY . .
 
-# Create logs directory
-RUN mkdir -p /app/logs
+# Create non-root user with specific UID/GID to match host user
+ARG USER_ID=1001
+ARG GROUP_ID=1001
 
-# Create non-root user with home directory and proper permissions
-RUN groupadd -r appuser && useradd -r -g appuser -m -s /bin/bash appuser \
+RUN groupadd -g ${GROUP_ID} appuser && \
+    useradd -r -u ${USER_ID} -g appuser -m -s /bin/bash appuser \
     && mkdir -p /home/appuser/.config/google-chrome /home/appuser/.local/share/applications \
     && chown -R appuser:appuser /app /home/appuser
+
+# Create logs directory and set proper permissions
+RUN mkdir -p /app/logs && chown -R appuser:appuser /app/logs
 
 USER appuser
 
