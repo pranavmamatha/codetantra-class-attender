@@ -343,6 +343,7 @@ def take_screenshot(driver, description="status"):
 
         # Try multiple screenshot directories in order of preference
         screenshot_dirs = [
+            '/app/screenshots_pranav',
             '/app/logs_pranav/screenshots',
             '/app/logs_pranav',
             '/tmp/screenshots',
@@ -384,19 +385,30 @@ def take_screenshot(driver, description="status"):
 
 def check_for_screenshot_request():
     """Check if user wants a screenshot"""
-    screenshot_request_file = '/app/logs/take_screenshot'
-    if os.path.exists(screenshot_request_file):
-        try:
-            os.remove(screenshot_request_file)
-            return True
-        except:
-            pass
+    screenshot_request_files = [
+        '/app/logs_pranav/take_screenshot',
+        '/app/logs/take_screenshot'
+    ]
+    
+    for screenshot_request_file in screenshot_request_files:
+        if os.path.exists(screenshot_request_file):
+            try:
+                os.remove(screenshot_request_file)
+                return True
+            except:
+                pass
     return False
 
 def cleanup_old_screenshots():
-    """Clean up screenshots older than 2 minutes"""
+    """Clean up screenshots older than 2 hours"""
     try:
-        screenshot_dirs = ['/app/logs/screenshots', '/app/logs', '/tmp/screenshots', '/tmp']
+        screenshot_dirs = [
+            '/app/screenshots_pranav',
+            '/app/logs_pranav/screenshots',
+            '/app/logs_pranav',
+            '/tmp/screenshots',
+            '/tmp'
+        ]
         current_time = time.time()
         deleted_count = 0
 
@@ -407,7 +419,7 @@ def cleanup_old_screenshots():
                         filepath = os.path.join(dir_path, filename)
                         try:
                             file_age = current_time - os.path.getctime(filepath)
-                            if file_age > 120:  # 2 minutes = 120 seconds
+                            if file_age > 7200:  # 2 hours = 7200 seconds
                                 os.remove(filepath)
                                 deleted_count += 1
                                 logger.info(f"Deleted old screenshot: {filename}")
@@ -431,8 +443,9 @@ def screenshot_monitor():
                 logger.info("Screenshot request detected")
                 take_screenshot(driver, "manual_request")
 
-            # Clean up old screenshots every check
-            cleanup_old_screenshots()
+            # Clean up old screenshots every 10 checks (50 seconds)
+            if int(time.time()) % 50 == 0:
+                cleanup_old_screenshots()
 
             time.sleep(5)  # Check every 5 seconds
         except Exception as e:
@@ -450,6 +463,10 @@ def main():
     logger.info(f"Username: {USERNAME}")
     logger.info(f"Refresh interval: {config['refresh_time']} seconds")
     logger.info("Screenshot requests will be checked every 5 seconds")
+
+    # Create necessary directories
+    os.makedirs('/app/logs_pranav', exist_ok=True)
+    os.makedirs('/app/screenshots_pranav', exist_ok=True)
 
     # Initialize driver
     max_retries = 3
@@ -517,6 +534,7 @@ def main():
                         logger.error("Failed to get session token URL")
                         time.sleep(30)
                         continue
+                    
                     take_screenshot(driver, "connecting_to_class")
                     logger.info("Connecting to the class...")
                     if connect2class(driver, sess_token_url):

@@ -15,14 +15,15 @@ import time
 
 app = Flask(__name__)
 
-# Configuration
+# Configuration - Fixed path issues
 LOGS_DIR = "/app/logs_pranav"
-SCREENSHOTS_DIR = "/app/logs_pranav"
+SCREENSHOTS_DIR = "/app/screenshots_pranav"
 LOG_FILE = os.path.join(LOGS_DIR, "class_joiner.log")
 SCREENSHOT_TRIGGER_FILE = os.path.join(LOGS_DIR, "take_screenshot")
 
 # Ensure directories exist
 os.makedirs(LOGS_DIR, exist_ok=True)
+os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
 
 class LogMonitor:
     def __init__(self):
@@ -68,7 +69,8 @@ def get_screenshots():
     """Get list of available screenshots"""
     screenshot_patterns = [
         os.path.join(SCREENSHOTS_DIR, "screenshot_*.png"),
-        os.path.join(SCREENSHOTS_DIR, "screenshots", "screenshot_*.png")
+        os.path.join(LOGS_DIR, "screenshot_*.png"),
+        os.path.join(LOGS_DIR, "screenshots", "screenshot_*.png")
     ]
 
     screenshots = []
@@ -97,7 +99,7 @@ def get_screenshots():
 @app.route('/')
 def dashboard():
     """Main dashboard page"""
-    return render_template('dashboard.html')
+    return render_template_string(DASHBOARD_HTML)
 
 @app.route('/api/logs')
 def get_logs():
@@ -141,8 +143,9 @@ def serve_screenshot(filename):
     """Serve screenshot files"""
     # Try different possible directories
     possible_dirs = [
-        os.path.join(SCREENSHOTS_DIR, "screenshots"),
         SCREENSHOTS_DIR,
+        os.path.join(LOGS_DIR, "screenshots"),
+        LOGS_DIR,
         "/tmp/screenshots",
         "/tmp"
     ]
@@ -581,7 +584,7 @@ DASHBOARD_HTML = '''
                     const logStatusText = document.getElementById('log-status-text');
                     if (data.log_file_exists) {
                         logStatus.classList.add('active');
-                        logStatusText.textContent = `Logs: Active`;
+                        logStatusText.textContent = 'Logs: Active';
                     } else {
                         logStatus.classList.remove('active');
                         logStatusText.textContent = 'Logs: No file';
@@ -603,23 +606,8 @@ DASHBOARD_HTML = '''
             }
 
             startRealTimeUpdates() {
-                // Note: Server-sent events might not work in all environments
-                // Fall back to polling if needed
-                try {
-                    this.eventSource = new EventSource('/api/logs/stream');
-                    this.eventSource.onmessage = (event) => {
-                        const data = JSON.parse(event.data);
-                        this.appendLog(data.log);
-                    };
-                    this.eventSource.onerror = () => {
-                        console.log('SSE connection failed, falling back to polling');
-                        this.eventSource.close();
-                        this.startPolling();
-                    };
-                } catch (error) {
-                    console.log('SSE not supported, using polling');
-                    this.startPolling();
-                }
+                // Use polling for better compatibility
+                this.startPolling();
             }
 
             startPolling() {
@@ -628,7 +616,6 @@ DASHBOARD_HTML = '''
                     try {
                         const response = await fetch('/api/logs?lines=10');
                         const data = await response.json();
-                        // This is a simplified approach - in production you'd want to track the last seen log
                         if (data.logs.length > 0) {
                             const container = document.getElementById('logs-container');
                             const lastLog = container.lastElementChild?.textContent;
@@ -769,30 +756,14 @@ DASHBOARD_HTML = '''
 </html>
 '''
 
-# Create templates directory and save the template
-def create_templates():
-    templates_dir = os.path.join(os.path.dirname(__file__), 'templates')
-    os.makedirs(templates_dir, exist_ok=True)
-
-    template_path = os.path.join(templates_dir, 'dashboard.html')
-    if not os.path.exists(template_path):
-        with open(template_path, 'w') as f:
-            f.write(DASHBOARD_HTML)
-
-# Alternative route that serves HTML directly without template file
-@app.route('/direct')
-def dashboard_direct():
-    """Direct HTML rendering without template files"""
-    return DASHBOARD_HTML
+def render_template_string(template_string):
+    """Simple template renderer since we're embedding HTML"""
+    return template_string
 
 if __name__ == '__main__':
-    # Create templates directory and HTML template on startup
-    create_templates()
-
     print("Flask Dashboard starting...")
     print("Dashboard will be available at:")
     print("- http://localhost:5000 (main dashboard)")
-    print("- http://localhost:5000/direct (direct HTML)")
     print("\nFeatures:")
     print("- Real-time log monitoring")
     print("- Screenshot gallery with thumbnails")

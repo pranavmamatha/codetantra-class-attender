@@ -15,11 +15,8 @@ RUN apt-get update && apt-get install -y \
 # Create app directory
 WORKDIR /app
 
-# Copy requirements for dashboard
-COPY <<EOF requirements-dashboard.txt
-Flask==2.3.3
-Pillow==10.0.1
-EOF
+# Create requirements file for dashboard
+COPY requirements-dashboard.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements-dashboard.txt
@@ -39,7 +36,7 @@ EXPOSE 5002
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:5000/api/status || exit 1
+    CMD curl -f http://localhost:5002/api/status || exit 1
 
 # Run the dashboard
 CMD ["python", "dashboard.py"]

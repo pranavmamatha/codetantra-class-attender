@@ -56,7 +56,7 @@ RUN groupadd -g ${GROUP_ID} appuser && \
     && chown -R appuser:appuser /app /home/appuser
 
 # Create logs directory and set proper permissions
-RUN mkdir -p /app/logs && chown -R appuser:appuser /app/logs
+RUN mkdir -p /app/logs_ashwin /app/logs_ashwin/screenshots && chown -R appuser:appuser /app/logs_ashwin
 
 USER appuser
 
@@ -65,7 +65,7 @@ EXPOSE 8282
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=30s --start-period=30s --retries=3 \
-    CMD python -c "import os; exit(0 if os.path.exists('/app/logs/class_joiner.log') else 1)"
+    CMD python -c "import os; exit(0 if os.path.exists('/app/logs_ashwin/class_joiner.log') else 1)"
 
 # Run the application
 CMD ["python", "autoscript.py"]
