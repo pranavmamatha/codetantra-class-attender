@@ -23,7 +23,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('/app/logs_pranav/class_joiner.log'),
+        logging.FileHandler('/app/logs_yugha/class_joiner.log'),
         logging.StreamHandler(sys.stdout)
     ]
 )
@@ -73,7 +73,7 @@ def update_app_status(status, meeting_info=None):
             "timestamp": datetime.datetime.now().isoformat(),
             "meeting_info": current_meeting_info
         }
-        with open('/app/logs_pranav/app_status.json', 'w') as f:
+        with open('/app/logs_yugha/app_status.json', 'w') as f:
             json.dump(status_data, f)
     except Exception as e:
         logger.error(f"Error writing status file: {e}")
@@ -82,7 +82,7 @@ def cleanup_logs_on_startup():
     """Clean up logs on startup only"""
     try:
         # Clean up log files only on startup
-        log_dirs = ['/app/logs_pranav', '/app/logs']
+        log_dirs = ['/app/logs_yugha', '/app/logs']
         for log_dir in log_dirs:
             if os.path.exists(log_dir):
                 log_files = glob.glob(os.path.join(log_dir, '*.log'))
@@ -102,9 +102,9 @@ def cleanup_screenshots_on_startup():
     try:
         # Clean up all screenshots only on startup
         screenshot_dirs = [
-            '/app/screenshots_pranav',
-            '/app/logs_pranav/screenshots',
-            '/app/logs_pranav',
+            '/app/screenshots_yugha',
+            '/app/logs_yugha/screenshots',
+            '/app/logs_yugha',
             '/tmp/screenshots',
             '/tmp'
         ]
@@ -130,9 +130,9 @@ def cleanup_old_screenshots():
     """Clean up screenshots older than 12 hours"""
     try:
         screenshot_dirs = [
-            '/app/screenshots_pranav',
-            '/app/logs_pranav/screenshots',
-            '/app/logs_pranav',
+            '/app/screenshots_yugha',
+            '/app/logs_yugha/screenshots',
+            '/app/logs_yugha',
             '/tmp/screenshots',
             '/tmp'
         ]
@@ -162,7 +162,7 @@ def cleanup_old_screenshots():
 def cleanup_old_logs():
     """Clear all log files"""
     try:
-        log_dirs = ['/app/logs_pranav', '/app/logs']
+        log_dirs = ['/app/logs_yugha', '/app/logs']
         for log_dir in log_dirs:
             if os.path.exists(log_dir):
                 log_files = glob.glob(os.path.join(log_dir, '*.log'))
@@ -592,9 +592,9 @@ def take_screenshot(driver, description="status"):
 
         # Try multiple screenshot directories in order of preference
         screenshot_dirs = [
-            '/app/screenshots_pranav',
-            '/app/logs_pranav/screenshots',
-            '/app/logs_pranav',
+            '/app/screenshots_yugha',
+            '/app/logs_yugha/screenshots',
+            '/app/logs_yugha',
             '/tmp/screenshots',
             '/tmp'
         ]
@@ -635,7 +635,7 @@ def take_screenshot(driver, description="status"):
 def check_for_screenshot_request():
     """Check if user wants a screenshot"""
     screenshot_request_files = [
-        '/app/logs_pranav/take_screenshot',
+        '/app/logs_yugha/take_screenshot',
         '/app/logs/take_screenshot'
     ]
     
@@ -722,8 +722,8 @@ def main():
     update_app_status("Initializing")
 
     # Create necessary directories
-    os.makedirs('/app/logs_pranav', exist_ok=True)
-    os.makedirs('/app/screenshots_pranav', exist_ok=True)
+    os.makedirs('/app/logs_yugha', exist_ok=True)
+    os.makedirs('/app/screenshots_yugha', exist_ok=True)
 
     # Start cleanup thread
     cleanup_thread = threading.Thread(target=periodic_cleanup, daemon=True)

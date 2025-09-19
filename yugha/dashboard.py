@@ -16,8 +16,8 @@ import time
 app = Flask(__name__)
 
 # Configuration - Fixed path issues
-LOGS_DIR = "/app/logs_ashwin"
-SCREENSHOTS_DIR = "/app/screenshots_ashwin"
+LOGS_DIR = "/app/logs_yugha"
+SCREENSHOTS_DIR = "/app/screenshots_yugha"
 LOG_FILE = os.path.join(LOGS_DIR, "class_joiner.log")
 STATUS_FILE = os.path.join(LOGS_DIR, "app_status.json")
 SCREENSHOT_TRIGGER_FILE = os.path.join(LOGS_DIR, "take_screenshot")
@@ -1144,7 +1144,7 @@ ENHANCED_DASHBOARD_HTML = '''
 if __name__ == '__main__':
     print("Enhanced Flask Dashboard starting...")
     print("Dashboard will be available at:")
-    print("- http://localhost:5002 (main dashboard)")
+    print("- http://localhost:5003 (main dashboard)")
     print("\nNew Features:")
     print("- Mobile responsive design")
     print("- Real-time meeting status display")
@@ -1154,4 +1154,4 @@ if __name__ == '__main__':
     print("- Better error handling and notifications")
     print("- Connection time remaining display")
 
-    app.run(host='0.0.0.0', port=5002, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=5003, debug=False, threaded=True)
