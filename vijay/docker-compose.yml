@@ -1,0 +1,65 @@
+# Docker Compose for Auto Class Joiner with Dashboard
+services:
+  class-joiner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USER_ID: "${USER_ID:-1001}"
+        GROUP_ID: "${GROUP_ID:-1001}"
+    container_name: auto-class-joiner-vijay
+    restart: unless-stopped
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./logs_vijay:/app/logs_vijay
+      - ./screenshots_vijay:/app/screenshots_vijay
+      - chrome_data_vijay:/home/appuser/.config/google-chrome
+    environment:
+      - TZ=Asia/Kolkata
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; exit(0 if os.path.exists('/app/logs_vijay/class_joiner.log') else 1)"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+    networks:
+      - class-joiner-network-vijay
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: class-joiner-dashboard-vijay
+    restart: unless-stopped
+    ports:
+      - "5004:5004"
+    volumes:
+      - ./logs_vijay:/app/logs_vijay
+      - ./screenshots_vijay:/app/screenshots_vijay
+    networks:
+      - class-joiner-network-vijay
+    environment:
+      - TZ=Asia/Kolkata
+      - FLASK_ENV=production
+    depends_on:
+      - class-joiner
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  chrome_data_vijay:
+    driver: local
+
+networks:
+  class-joiner-network-vijay:
+    driver: bridge
